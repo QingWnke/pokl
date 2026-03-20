@@ -1,0 +1,41 @@
+version: '3.9'
+services:
+  mongodb:
+    image: mongo:7
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: mini_game_portal
+    volumes:
+      - mongo-data:/data/db
+  backend:
+    build:
+      context: ./backend
+    command: npm run dev
+    working_dir: /app
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    env_file:
+      - ./backend/.env.example
+    ports:
+      - "4000:4000"
+    depends_on:
+      - mongodb
+  frontend:
+    build:
+      context: ./frontend
+    command: npm run dev -- --host 0.0.0.0
+    working_dir: /app
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    env_file:
+      - ./frontend/.env.example
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+volumes:
+  mongo-data:
